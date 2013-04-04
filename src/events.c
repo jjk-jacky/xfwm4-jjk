@@ -1394,23 +1394,20 @@ handleEnterNotify (DisplayInfo *display_info, XCrossingEvent * ev)
                 clientClearDelayedFocus ();
             }
         }
-        if (c == clientGetFocus ())
+        for (b = 0; b < BUTTON_COUNT; b++)
         {
-            for (b = 0; b < BUTTON_COUNT; b++)
+            if (MYWINDOW_XWINDOW(c->buttons[b]) == ev->window)
             {
-                if (MYWINDOW_XWINDOW(c->buttons[b]) == ev->window)
+                if (!xfwmPixmapNone(clientGetButtonPixmap(c, b, PRELIGHT)))
                 {
-                    if (!xfwmPixmapNone(clientGetButtonPixmap(c, b, PRELIGHT)))
-                    {
-                        c->button_status[b] = BUTTON_STATE_PRELIGHT;
-                        need_redraw = TRUE;
-                    }
+                    c->button_status[b] = BUTTON_STATE_PRELIGHT;
+                    need_redraw = TRUE;
                 }
             }
-            if (need_redraw)
-            {
-                frameQueueDraw (c, FALSE);
-            }
+        }
+        if (need_redraw)
+        {
+            frameQueueDraw (c, FALSE);
         }
 
         /* No need to process the event any further */

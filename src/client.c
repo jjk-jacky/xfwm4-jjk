@@ -3851,6 +3851,12 @@ clientGetButtonPixmap (Client *c, int button, int state)
 int
 clientGetButtonState (Client *c, int button, int state)
 {
+    if ((c->button_status[button] == BUTTON_STATE_PRELIGHT) &&
+         clientGetButtonPixmap (c, button, PRELIGHT))
+    {
+        return (PRELIGHT);
+    }
+
     if (state == INACTIVE)
     {
         return (state);
@@ -3860,12 +3866,6 @@ clientGetButtonState (Client *c, int button, int state)
         clientGetButtonPixmap (c, button, PRESSED))
     {
         return (PRESSED);
-    }
-
-    if ((c->button_status[button] == BUTTON_STATE_PRELIGHT) &&
-        clientGetButtonPixmap (c, button, PRELIGHT))
-    {
-        return (PRELIGHT);
     }
 
     return (ACTIVE);
