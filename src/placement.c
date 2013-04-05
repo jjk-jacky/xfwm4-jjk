@@ -691,7 +691,7 @@ smartPlacement (Client * c, int full_x, int full_y, int full_w, int full_h)
         Client *c2 = list->data;
         gint i, n;
         gboolean done;
-        gint best_x, best_y;
+        cairo_rectangle_int_t best;
         gdouble best_surface = 0;
         gboolean can_window_fit = FALSE;
 
@@ -763,7 +763,7 @@ smartPlacement (Client * c, int full_x, int full_y, int full_w, int full_h)
         for (i = 0; i < n; ++i)
         {
             cairo_rectangle_int_t r;
-            gint exp_x, exp_y;
+            cairo_rectangle_int_t exp;
             gdouble exp_surface;
             gboolean exp_can_window_fit;
             gdouble surface;
@@ -774,10 +774,9 @@ smartPlacement (Client * c, int full_x, int full_y, int full_w, int full_h)
             /* expand horizontally, then vertically */
             expand_horizontal (region_hole, &rect, full_x, full_y, full_w, full_h);
             expand_vertical (region_hole, &rect, full_x, full_y, full_w, full_h);
-            exp_x = rect.x;
-            exp_y = rect.y;
-            exp_surface = rect.width * rect.height;
-            exp_can_window_fit = frame_width <= rect.width && frame_height <= rect.height;
+            exp = rect;
+            exp_surface = exp.width * exp.height;
+            exp_can_window_fit = frame_width <= exp.width && frame_height <= exp.height;
 
             /* expand vertically, then horizontally */
             expand_vertical (region_hole, &rect, full_x, full_y, full_w, full_h);
@@ -791,9 +790,8 @@ smartPlacement (Client * c, int full_x, int full_y, int full_w, int full_h)
                     || (exp_can_window_fit && can_fit && surface < exp_surface))
             {
                 exp_can_window_fit = can_fit;
+                exp = rect;
                 exp_surface = surface;
-                exp_x = rect.x;
-                exp_y = rect.y;
             }
 
             /* is this the new best result ? (same criteria) */
@@ -802,15 +800,14 @@ smartPlacement (Client * c, int full_x, int full_y, int full_w, int full_h)
                     || (can_window_fit && exp_can_window_fit && exp_surface < best_surface))
             {
                 can_window_fit = exp_can_window_fit;
+                best = exp;
                 best_surface = exp_surface;
-                best_x = exp_x;
-                best_y = exp_y;
             }
         }
         cairo_region_destroy (region_hole);
 
-        c->x = best_x;
-        c->y = best_y;
+        c->x = best.x;
+        c->y = best.y;
 
         /* unless it could fit, make sure it's fully within monitor */
         if (!can_window_fit)
@@ -823,6 +820,18 @@ smartPlacement (Client * c, int full_x, int full_y, int full_w, int full_h)
             n = c->y + frame_height - full_y - full_h;
             if (n > 0)
                 c->y -= n;
+        }
+
+        /* w/ option snap_to_border, we'll try to do just that on the right
+         * & bottom borders if we can & are not on the top/left ones already */
+        if (screen_info->params->snap_to_border)
+        {
+            /* snap right */
+            if (c->x > full_x && best.x + best.width == full_x + full_w)
+                c->x = full_x + full_w - frame_width;
+            /* snap bottom */
+            if (c->y > full_y && best.y + best.height == full_y + full_h)
+                c->y = full_y + full_h - frame_height;
         }
 
         /* add frames */
