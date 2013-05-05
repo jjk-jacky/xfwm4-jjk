@@ -38,9 +38,10 @@
 #include "frame.h"
 #include "netwm.h"
 
+
 /* Compute rectangle overlap area */
 
-static unsigned long
+static inline unsigned long
 segment_overlap (int x0, int x1, int tx0, int tx1)
 {
     if (tx0 > x0)
@@ -58,7 +59,7 @@ segment_overlap (int x0, int x1, int tx0, int tx1)
     return (x1 - x0);
 }
 
-static unsigned long
+static inline unsigned long
 overlap (int x0, int y0, int x1, int y1, int tx0, int ty0, int tx1, int ty1)
 {
     /* Compute overlapping box */
@@ -862,7 +863,7 @@ static void
 mousePlacement (Client * c, int full_x, int full_y, int full_w, int full_h, int mx, int my)
 {
     g_return_if_fail (c != NULL);
-    TRACE ("entering centerPlacement");
+    TRACE ("entering mousePlacement");
 
     c->x = mx + frameLeft(c) - frameWidth(c) / 2;
     c->y = my + frameTop(c) - frameHeight(c) / 2;
