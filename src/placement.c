@@ -757,6 +757,7 @@ smartPlacement (Client * c, int full_x, int full_y, int full_w, int full_h)
         if (!region_hole)
             break;
 
+has_hole:
         cairo_region_destroy (region_monitor);
         cairo_region_destroy (region_used);
 
@@ -841,6 +842,9 @@ smartPlacement (Client * c, int full_x, int full_y, int full_w, int full_h)
 
         return;
     }
+
+    if (region_hole)
+        goto has_hole;
 
     cairo_region_destroy (region_monitor);
     cairo_region_destroy (region_used);
